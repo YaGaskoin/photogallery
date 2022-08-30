@@ -1,0 +1,33 @@
+version: '3.7'
+
+x-app_environment: &app_environment
+  environment:
+    - DEBUG=True
+    - POSTGRES_PASSWORD=postgres
+
+services:
+  backend:
+    tty: true
+    image: alpine
+    restart: on-failure
+    entrypoint: sh -x ./entrypoint.sh
+    command: python manage.py runserver 0.0.0.0:8000
+    working_dir: /app
+    build:
+      context: ./backend
+    depends_on:
+      - db
+    ports:
+    - 8000:8000
+    <<: *app_environment
+  db:
+    image: postgres:12.3-alpine
+    restart: unless-stopped
+    volumes:
+      - postgresdata:/var/lib/postgresql/data
+    ports:
+      - 15202:5432
+    <<: *app_environment
+
+volumes:
+  postgresdata:
